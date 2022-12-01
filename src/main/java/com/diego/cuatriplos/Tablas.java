@@ -7,6 +7,8 @@ package com.diego.cuatriplos;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -52,9 +54,9 @@ public class Tablas {
     public static TableModel cuatriplos(String expresion) throws InterruptedException {
         DefaultTableModel tabla = new DefaultTableModel() {
         };
+        tabla.addColumn("Operador");
         tabla.addColumn("Numero 1");
         tabla.addColumn("Numero 2");
-        tabla.addColumn("Operador");
         tabla.addColumn("Resultado");
         String[] arrayInfix = expresion.split(" ");
         Stack<String> Entrada = new Stack<String>();
@@ -63,67 +65,78 @@ public class Tablas {
         for (int i = arrayInfix.length - 1; i >= 0; i--) {
             Entrada.push(arrayInfix[i]);
         }
-
+        int count = 0;
         while (!Entrada.empty()) {
             String[] vector = new String[4];
             System.out.println(Arrays.asList(Entrada));
-            Thread.sleep(500);
+//            Thread.sleep(2000);
             if (!Entrada.peek().matches("[-\\+\\*\\/]")) {
                 Numeros.push(Entrada.pop());
                 System.out.println(Arrays.asList(Numeros));
             } else if (Entrada.peek().matches("[-\\+\\*\\/]")) {
-                if (Entrada.peek().equals("/")) {
-//                    Entrada.pop();
-                    float num1 = Float.parseFloat(Numeros.pop());
-                    float num2 = Float.parseFloat(Numeros.pop());
-                    float res = num2 / num1;
-                    vector[0] = num1 + "";
-                    vector[1] = num2 + "";
-                    vector[2] = Entrada.peek();
-                    vector[3] = res + "";
-                    Numeros.push(res + "");
+                final String regex = "(R\\d)\\s=\\s(.+)";
+                float num1, num2, res;
+                count++;
+                String operador = Entrada.pop();
+                vector[0] = operador;
+                String n1 = Numeros.pop();
+                String n2 = Numeros.pop();
+                if (n1.matches(regex)) {
+                    String[] groups = stractPattern(n1);
+                    vector[1] = groups[0];
+                    num1 = Float.parseFloat(groups[1]);
+                } else {
+                    num1 = Float.parseFloat(n1);
+                    vector[1] = n1;
+                }
+                if (n2.matches(regex)) {
+                    String[] groups = stractPattern(n2);
+                    vector[2] = groups[0];
+                    num2 = Float.parseFloat(groups[1]);
+                } else {
+                    num2 = Float.parseFloat(n2);
+                    vector[2] = n2;
+                }
+                if (operador.equals("/")) {
+                    res = num2 / num1;
+                    vector[3] = "R" + count + " = " + res + "";
+                    Numeros.push("R" + count + " = " + res + "");
                     System.out.println(Arrays.asList(Numeros));
-                } else if (Entrada.peek().equals("*")) {
-//                    Entrada.pop();
-                    float num1 = Float.parseFloat(Numeros.pop());
-                    float num2 = Float.parseFloat(Numeros.pop());
-                    float res = num2 * num1;
-                    vector[0] = num1 + "";
-                    vector[1] = num2 + "";
-                    vector[2] = Entrada.peek();
-                    vector[3] = res + "";
-                    Numeros.push(res + "");
+                } else if (operador.equals("*")) {
+
+                    res = num2 * num1;
+                    vector[3] = "R" + count + " = " + res + "";
+                    Numeros.push("R" + count + " = " + res + "");
                     System.out.println(Arrays.asList(Numeros));
-                } else if (Entrada.peek().equals("-")) {
+                    
+                } else if (operador.equals("-")) {
                     // Signos.push(Entrada.pop());
 //                    Entrada.pop();
-                    float num1 = Float.parseFloat(Numeros.pop());
-                    float num2 = Float.parseFloat(Numeros.pop());
-                    float res = num2 - num1;
-                    vector[0] = num1 + "";
-                    vector[1] = num2 + "";
-                    vector[2] = Entrada.peek();
-                    vector[3] = res + "";
-                    Numeros.push(res + "");
+                    res = num2 - num1;
+                    vector[3] = "R" + count + " = " + res + "";
+                    Numeros.push("R" + count + " = " + res + "");
                     System.out.println(Arrays.asList(Numeros));
-                } else if (Entrada.peek().equals("+")) {
+                } else if (operador.equals("+")) {
                     // Signos.push(Entrada.pop());
 //                    Entrada.pop();
-                    float num1 = Float.parseFloat(Numeros.pop());
-                    float num2 = Float.parseFloat(Numeros.pop());
-                    float res = num2 + num1;
-                    vector[0] = num1 + "";
-                    vector[1] = num2 + "";
-                    vector[2] = Entrada.peek();
-                    vector[3] = res + "";
-                    Numeros.push(res + "");
+                    res = num2 + num1;
+                    vector[3] = "R" + count + " = " + res + "";
+                    Numeros.push("R" + count + " = " + res + "");
                     System.out.println(Arrays.asList(Numeros));
                 }
                 tabla.addRow(vector);
-                Entrada.pop();
             }
         }
         return tabla;
+    }
+
+    public static String[] stractPattern(String string) {
+        final String regex = "(R\\d)\\s=\\s(.+)";
+        final Pattern pattern = Pattern.compile(regex);
+        final Matcher matcher = pattern.matcher(string);
+        matcher.find();
+        String[] groups = {matcher.group(1), matcher.group(2)};
+        return groups;
     }
 
 }
